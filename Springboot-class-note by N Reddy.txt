@@ -1,0 +1,1075 @@
+Date::21-10-2019
+
+Spring Boot::
+===========
+springboot advantages::
+----------------------------
+Springboot is an approach to develop spring application with minimal or less configuration
+
+springboot provides starter poms(which is used to simplifies the maven  configuarations )
+
+springboot provides  http embeded servers(like tomcat,jetty)
+
+springboot provides autoconfigurations
+
+springboot provides actuators( production ready features like health check,thread dump,heap dump)
+
+springboot supports opinionated defaults configuration.
+	suppose if you add web dependency in pom.xml springboot thought itself server is required. so, embeded server is provided.
+	suppose if you add  spring-boot-starter-data-jpa in pom.xml springboot thought itself connection pool is required.
+	so connection pools are provided
+springboot provides profiles (environment specific configuration)
+	if our application  deployment is changing one environment to another environment we need to change
+	 the application properties(like database config properties,
+	ORM details,port numbers,Smtp configurations rest api urls and etc.)
+	
+	for  every time  applicaton deployment  changing one environment to another environment is complex process.
+	So, spring boot provides profiles in application.properties file or application.yml file if you mention  "spring.profiles.active=dev" 
+	our application is currently running on dev environment we no need to change all the properties in  application.yml or application.properties
+	
+
+Ex:  spring.profiles.active=dev( our application is currently running on dev environment)
+	spring.profiles.active=pilot(our application is currently running on pre production environment)
+springboot disadvantages::
+--------------------------------
+	migrating spring application  to spring boot application is very difficult.spring boot is used to develop scrach-level or brand new projects.
+	Spring boot may unnecessarily increase the deployment binary size with unused dependencies.so, possible to exculde unused dependencies.
+
+	"Spring Boot = Spring + Embedded Servers - XML configuration"
+
+Creating Spring Boot Project
+----------------------------
+We can create Spring Boot project in below 4 ways
+
+1) Spring Initializer (https://start.spring.io)(download project file  from internet and import project into ide)
+
+2) Spring Starter Wizard in STS
+
+3) Maven Project
+
+4) From command prompt (CLI)
+
+while developing springboot application we need to add the following dependencies in pom.xml
+----------------------------------------------------------------------------------------------------------------------------------------------
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>2.2.0.RELEASE</version>
+	</parent>
+
+
+spring-boot-starter-parent=> this is the parent dependency of the spring boot project. here we need to specify  spring boot version .
+in other  child dependencies we don't need to  mention version.the other child  dependencies will be downloaded  according to 
+ spring-boot-starter-parent dependency.
+
+if you want to develop spring boot standalone application  we should take packaging type  is jar. 
+then the following dependency  automatically added to pom.xml file
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter</artifactId>
+		</dependency>
+
+if you want to develop spring boot web application we should take packaging type is war.
+then the following dependency   will select at project creation or manually  added to pom.xml file
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+
+if  you want to develop spring boot reactive application  we need to  select or  add manually the following dependency.
+
+		 <dependency>
+            			<groupId>org.springframework.boot</groupId>
+            			<artifactId>spring-boot-starter-webflux</artifactId>
+    		    </dependency>
+
+Main class  of Springboot application::
+----------------------------------------------------------
+
+@SpringBootApplication
+public class  SampleApp {
+ 
+    public static void main(String... args) {
+        SpringApplication.run(SampleApp.class, args); //BootStrapping the spring boot application
+    }
+}
+
+run() method is predefined static method which is avalible in SpringApplication class.
+In spring boot application main method is avalible which is used to call run() method. spring boot application   execution begins from
+ run() method .run() method is used to BootStrap the spring boot application.
+
+what actions run() method internally do?
+-----------------------------------------------------------
+1.starts the stop watch(to understand howmuch time taken to start application)
+2.run()  method loads application.properties file by default.  run() method checks which profile is activated to load properties.
+	If there is no profile is enabled then it will read data from application.properties
+3.run() method checks type of application.  wheather it is default application or not ,wheather it is web applicaton or  not, wheather it is reactive application or not.
+4.once run() method is identified type of application then spring boot starts ioc container by using corresponding class.
+5.once ioc container is created .and it is going to perform class path scanning. why class path scanning to identify spring beans.
+6.once identified  spring beans. boot will  perform bean object creation and dependency injection
+7. calculate time taken to start spring boot application and print it on console
+8. return ioc conatiner reference.
+
+what is ioc conatiner?
+--------------------------
+ioc container is a memory which used to strore  objects by using a map concept in the form of key-value pair.
+
+@SpringBootApplication is equivalent or combination of  four types of annotations they are
+-----------------------------------------------------------------------------------------------------------------------------------
+ 1.@SpringBootConfiguration:  which is used to make  current class as configuration class
+ 2.@EnableAutoConfiguration: since spring boot supports opiniated defaults ,this annotation makes predefined classes
+			 as spring beans based on the jars or starters that are added to build path.
+ 3.@ComponentScan: which is used to recognizes stereo type based configuration classes as current packages of spring beans automatically.
+ 4.@ConfigurationPropertiesScan: which is used to enable @ConfigurationProperties scan on the package where the application is located .
+
+ @SpringBootApplication is used to identify the main class of the springboot application. In the main class  main() method and run() 
+method  is available.run() method takes current class as the argument. that current class package considered as a basepackage.
+
+In the spring boot component scan will happen based on the base package naming convention.  
+ if package don't follow base package naming convention component scan will not happen
+
+in the process of componet scanning spring boot identifies which class as spring bean class or which class as  normal  java class.
+
+the class which contain stereotype annotation  that class consider as spring bean class.otherwise that class acting as normal java class.
+
+if any one of the following annotation is annotated with java class that class consider as a spring bean class and boot will create object for that class and
+ also perform dependency injection .They are
+
+@Component
+@Configuration
+@Service
+@Repository
+@Controller
+@RestController(introduced in spring 4.x  version. it is combination of @controller and @ResponseBody.)
+The above annotations are class level annotations
+@Bean : this is a method level annotation. which is used to customize the object creation logic  at method level.
+
+22-10-2019
+-------------------
+
+Bean Collaboration::
+------------------------
+Generally one java class talks to another class in two ways   by using  compositon  and  inheritance. if you go to that approach 
+tighly coupling will happen among those classes.
+
+To achieve loosely coupling among those classes spring propose dependency injection with the help of ioc container.
+
+what is dependency injection:
+------------------------------
+
+The process of injecting  dependent bean class object into target bean class object is called dependency injection.
+
+Generally we will doing  dependency injection in two ways they are
+
+1.setter injection.
+2.constructor  injection.
+
+with the help of these two we can do autowiring or manual wiring.
+manual wiring means  explicitly we are going to tell which  dependent bean should be inject to  target bean by using  'ref' attribute. 
+
+
+@Autowired:there are 3 models of autowiring.
+	byType(default)(byType worked based on the dataType of the bean)
+	byName(byName worked based on the name of the bean)
+	Constructor(Constructor worked based on the constructor type internally use byType mode  only)
+
+whenever we go for @Autowired  annotation internally spring is going to use AutowiredAnnotationBeanPostProcessor.
+this class  will scan your classes it will identify the dependents and it is going to inject dependent object into target object.
+
+The @Autowired annotation can be applied at 3 levels they are
+	1.field level
+	2. setter method level
+	3. constructor level
+
+Ex: Field  Level Injection
+---------------------------------
+
+
+public interface ContactDAO {
+}
+
+public interface ContactService {
+}
+
+@Repository
+public class ContactDAOImpl  implements ContatctDAO{
+	
+	public ContactDAOImpl() {
+		System.out.println("ContactDAOImpl:0-param constructor");
+	}
+}
+
+@Service// which is used  to make our class as spring bean 
+public class ContatctServiceImp implement ContatctService{
+
+		public ContactServiceImpl() {
+		System.out.println("ContactServiceImpl:0-param constrcutor");
+		}
+
+		@Autowire//here  ContactDAO(dependent) is injected into contatctservice(target). this is bean collaboration and also saying dependency injection
+		private  ContatctDAO dao;
+
+	}
+Note: first dependent object is created and after that target object will be created.
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Ex :2:Setter method level:
+----------------------------------------------------------------------
+public interface ContactDAO {
+}
+
+public interface ContactService {
+}
+
+@Repository
+public class ContactDAOImpl  implements ContactDAO{
+	
+	public ContactDAOImpl() {
+		System.out.println("ContactDAOImpl:0-param constructor");
+	}
+}
+
+@Service
+public class ContactServiceImp implement ContactService{
+
+		public ContactServiceImpl() {
+		System.out.println("ContactServiceImpl:0-param constrcutor");
+		}
+		private ContatctDAO dao;
+
+		@Autowired
+		public void setDao(ContatctDAO dao) {
+		
+			System.out.println("setter method is called");
+			this.dao = dao;
+		}
+
+}
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Ex :3:Construcor level:
+-----------------------------------
+
+public interface ContactDAO {
+}
+
+public interface ContactService {
+}
+
+@Repository
+public class ContactDAOImpl  implements ContactDAO{
+	
+	public ContactDAOImpl() {
+		System.out.println("ContactDAOImpl:0-param constructor");
+	}
+}
+
+@Service
+public class ContatctServiceImp implement ContatctService{
+
+		public ContactServiceImpl() {
+		System.out.println("ContactServiceImpl:0-param constrcutor");
+		}
+	
+		@Autowired
+		public ContactServiceImpl(ContatctDAO dao) {
+			System.out.println("ContactServiceImpl:1-param constrcutor");
+			this.dao = dao;
+	}
+}
+
+Note::	
+	 whenever you  go for constructor  based injection  @Autowired  is optional then if you have  parameterized constructor.
+	if you have zero-param constructor  then @Autowired annotation is required.
+ 	whenever you go for setter injection @Autowired annotation is required.
+
+@primary: 	if you want to consider only one bean among the multiple beans then we should go for @primary annotation.
+		this annotation solves the ambiguity problem.
+
+@Qualifier: 	while performing "byType" mode of autowiring there is a possibility of getting ambiguity problem if multiple dependents are found to
+ 		inject  target class. In order to overcome this problem we need to use "@Qulifier" annotation which makes Ioc container to perform 
+		"byName" mode of autowiring.
+ 
+Note: 	@Primary and @Qualifier annotations comes into picture only autowiring scenario.
+	 If autowiring is not available there is no meaning of @Primary and @Qualifer annotations.
+
+when should we go for BeanPostProcessor?
+--------------------------------------------------------------
+if you want to perform some common logic for all the beans before instantiation creation    and  after instantiation creation 
+then we will go for BeanPostProcessor
+
+what is the difference between  spring bean life cycle and BeanPostProcessor and BeanFactoryPostProcessor?
+---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Spring bean life cycle applicable for only one bean. if you want to perform init and delete operation  for one bean then we should go for 
+Spring bean life cycle.
+
+BeanPostProcessor applicable for all the beans.if you want to perform init and delete operation for all the beans in your application then we should
+ go for BeanPostProcessor.
+
+ BeanFactoryPostProcessor applicable for container.  if you want to modify container meta data after loading the beans and before instantiating beans
+ then we should go for BeanFactoryPostProcessor.
+
+First we will execute BeanFactoryPostProcessor only why because first  beans are loaded. is there any FactoryPostProcessor execute that.
+Before creating objects BeanPostProcessor will be executed after creating object life cycle will be executed.
+
+
+23-10-2019
+--------------------
+the default value of  @Autowired  annotation is true
+ Purpose of @Autowired(required=false):
+
+
+if dependent bean is not availble to perform dependency injection through autowiring then exception will be raised when required is "true".
+if you take @Autowired(required=false) when depedent bean is not availble.so exception will not be raised and null will be assigned.
+
+
+24-10-2019
+------------------
+Web application development  in Spring Boot
+------------------------------------------------------------
+ if you want to develop spring boot web application  then  you have to take packaging type is  -- war 
+
+dependency : springboot-starter-web
+(it downloads all required jars to develop web application using spring)
+
+By default it deploys our application on tomcat server with 8080 as a port number
+
+Note : Two processes can't run on same port number
+
+we need to change port number in application.properties file or application.yml file
+in application.properties file 
+----------------------------
+server.port=9090
+in application.yml file
+----------------------------
+server:
+   port: 9090
+
+
+for Spring boot  web applications by default context-path is empty.
+
+
+
+localhost:9090/welcome ---- without context-path
+
+in application.properties
+-------------------------------
+server.servlet.context-path=/App1
+in application.yml
+-----------------------------
+server:
+    servlet: 
+        context-path: /App1
+
+
+localhost:9090/App1/welcome --- with context-path
+
+Note: context-path must start with / don't end with /
+
+
+YAML stands for Yet Another Markup Language
+Note: Indents will play very important role in application.yml file
+
+
+@RestController 
+public class WelcomeController {
+
+	@RequestMapping(value="/welcome",method=RequestMethod.GET)
+	public String welcome(){
+		return "Welcome to Spring Boot";
+	}
+}
+-----------------------------------------
+url of springboot web application is:: "ip address or localhost:portNum/Contextpath/welcome"
+
+if you want to remove unused dependencies in our project we need to go for maven exclusion concept.
+Ex:
+
+<exclusions>
+	<exclusion>
+		<groupId>   </groupId>
+		<artifactId> </artifactId>
+	</exclusion>
+
+</exclusions>
+
+If you want to use jetty server instead of tomcat. First of all exclude  tomcat dependency from
+ spring-boot-starter-web. after that we need to add jetty server dependency.
+
+		<dependency>
+			
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-tomcat</artifactId>
+				</exclusion>
+			
+			</exclusions>
+		</dependency>
+
+	<!--  jetty server dependency -->
+		
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-jetty</artifactId>
+			<scope>provided</scope>
+		</dependency>
+
+
+
+search in google :
+	what is contact class and contact interface?
+	type of garbage collectors.
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Date::25-20-2019
+
+SpringBoot Web Application Deployment in External Tomcat Server:
+------------------------------------------------------------------------------------------------
+If you want to  deploy spring boot  web application in external server then we need to do 2 changes in pom.xml file
+
+First one is we have to mention spring boot application fully qualified class name  using  <start-class> tag  in <properties> tag of  pom.xml as like
+	<properties>
+		
+		<start-class>com.nit.SampleWebAppApplication</start-class>
+	</properties>
+
+second one is we have to mention scope  is "provided" using <scope> tag in spring-boot-starter-tomcat dependency .
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-tomcat</artifactId>
+			<scope>provided</scope>
+		</dependency>
+
+---------------------------------------------------------------------------------------------------------------------
+
+Spring Boot with Restfull Services::
+-------------------------------------------------
+What is Distributed application ?
+
+Distributed applications (distributed apps) are applications or software that runs on multiple computers within a network at the same
+ time and can be stored on servers or with cloud computing.
+
+Unlike traditional applications that run on a single system, distributed applications run on multiple systems simultaneously for a single task or job.
+
+To develop Distributed applications we need Distributed technologies.
+
+
+- CORBA (Common request broker architecture)
+- RMI (Remote method invocation)
+- EJB (Enterprise java beans)
+- Webservices 
+
+What is Webservice ?
+
+- Webservice is a distributed technology which is used to develop distributed applications with intereoperability.
+
+
+What are restful services?
+
+Restful services are used to develop distributed applications with intereoperability.
+
+What is intereoperability ?
+Irrespective of platform and irrespective of  technology   one application  able to communicates with other application is called intereoperabiliy.
+
+ Platform independent and language independent
+	java --- c#(java application comuniticates to .net application)
+	java --- python(java application comunicates to python application)
+	python --- java(python application communicates to java application)
+	java ---- C++(java application communicates to c++ application)
+	
+Why we need to know restful services ?
+
+Now a days every application having business requirements 
+to communicate with other applications. 
+
+We can communicate from one app to another app using webservices.
+
+There are some challenges involved in working with webservices. 
+
+To overcome challenges in webservice, Restful Services came into picture.
+
+How restful services are different from webservices ?
+-----------------------------------------------------
+Real adoptability is not available in webservices(Every body can't access webservices, if you want to access web service 
+you should know soap xml and dynamic url of wsdl that means  only soap webservice  developer is able to access webservices)
+
+Real Intereoperability is not available in webservice(Always we should exchange data in soap xml only)
+
+Webservices specifications provided by WS-I.
+
+WS-I (Webservices intereoperability)-non profitable org
+
+WS-I released below 2 specifications to achieve intereoperability.
+
+ 1) B.P 1.0 (Basic Profile) specification
+ 
+ - Sun adopted B.P 1.0 and provided jax-rpc api.
+ - jax-rpc api (java api for xml remote procedural call)
+ 
+ 2) B.P 1.1 specification
+ - Sun adopted B.P 1.1 and provided JAX-WS API.
+ - jax-ws api(java api for xml webservices)
+
+The above jax-rpc and jax-ws apis are partial. We need implementations to develop webservice.
+
+JAX-RPC API IMPLEMENTATIONS
+---------------------------
+SI (SUN IMPLEMENTATIONS)
+APACHE AXIS
+ORACLE WEBLOGIC
+IBM WEBSPHERE ETC...
+
+
+JAX-WS API IMPLEMENTATIONS
+--------------------------
+RI (SUN REFERENCE IMPLEMENTATION)
+APACHE AXIS 2
+APACHE CXF
+ORACLE WEBLOGIC
+IBM WEBSPHERE 
+JBOSS ETC....
+
+Using api and implementation we can develop both consumer and provider.
+
+If we develop web service using jax-rpc or jax-ws API then that is called as soap webservice.
+
+soap webservices also called as big web services.
+
+
+
+When webservices came into market every body started adopting and using webservices to develop distributed applications.
+
+One PHD student is not happy with Webservices and he started doing his analysis and identified loop holes available in webservices.
+
+That PHD student is Roy Fielding.
+
+As part of his analysis he identified it is very difficult
+to understand webservices and very difficult to adopt webservices.
+
+Real intereoperability and Real adoptability is not available in webservices.
+
+If you want to access webservice you should know what is soap and wsdl.
+
+To overcome above challenges he identified that internet is running successfully. What makes internet is real adoptable and real intereoperable.
+ If i can use same principles what internet is using then i can also achieve real intereoperability and real adoptability.
+
+With that motivation he identified some principles and he released white paper with Rest Architecture principles.
+
+
+Initially nobody is interested to use Roy Fielding principles.
+
+It took few years to bring lime light for Restful services.
+
+
+Below are the Rest Architecture principles
+--------------------------------------------------------------
+1) Unique Addressbility
+2) Uniform constraint interfaces (http methods)
+3) Message oriented representation
+4) Communication stateless
+5) HATEOAS (Hypermedia As The Engine Of  Application State)
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Date:26-10-2019
+
+Rest Architecture principles
+----------------------------------
+1) Unique Addressbility :
+------------------------------------
+
+ Every resource should bind to unique address.
+
+When we create a java class (ReportDao.java) in project we are only going to use that class.
+
+When we create a servlet in our project, then we are not going to use that class in our project. 
+
+That servlet is going to access by others because servlet is a distributed component.
+
+How others can access our Servlet ? - They should  know address  of our servlet. 
+
+Address of servlet is URL of Servlet. 
+
+Similarly when we create Rest component in project, we are not going to use that component in our project.
+
+Rest component is a distibuted component.
+
+Rest component is going to access by others or other applications.
+
+To access our rest component they should know address of our rest component.
+
+Every Rest component should bind to unique address.
+
+Ex:
+
+@RestController//to make our class as distributed component.
+@RequestMapping("/restapi") //Restcomponent should bind to unique address.
+public class WelcomeController {
+	
+	@GetMapping("/welcome)
+	public String welcome() {
+		return "Welcome to Restfull services";
+	}
+}
+Note:: If we use @RestController annotation at class level then only that class must be considered as Distributed component. other wise it would be like a normal java class.
+           @RequestMapping we can use class level and  also method level.
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+2) Uniform constraint interfaces:
+----------------------------------------------
+Uniform - same
+constraint - limited
+
+This is used to achieve real adoptability
+
+When we develop distributed component, other persons or other 
+applications are going to access our distributed component.
+
+When they can access our component ? - If they have the address they can access.
+
+Only address is sufficient ?- No 
+
+Along with address they should know what is there in resource then only they can access our resource.
+
+If we write our own methods with our names then it would be very difficult for others to access our component. 
+
+That's why whatever the methods we are writing in resource we should bind them to http designator methods.
+
+GET, POST, PUT and DELETE.
+
+To achieve easy adoptability we should bind our rest controller methods  to HTTP methods
+
+GET method ----> @GetMapping
+
+POST method ---> @PostMapping
+
+PUT method ----> @PutMapping
+
+DELETE method ---> @DeleteMapping
+
+
+
+Note: 1.If  class level address is available  then method level  address is optional.
+Ex:
+@RestController
+@RequestMapping("/welcome")
+public class WelcomeController {
+
+	@GetMapping
+	public String welcome() {
+		return "Welcome to Restfull services";
+	}
+
+	
+
+}
+
+
+Note:2. if class level address is available when multiple methods are binded to same  request then address is mandatory at method level.
+Ex:
+@RestController
+@RequestMapping("/restapi")
+public class WelcomeController {
+
+	@GetMapping("/welcome")
+	public String welcome() {
+		return "Welcome to Restfull services";
+	}
+
+	@GetMapping("/greet")
+	public String greet() {
+		return "Good Morning..!";
+	}
+
+}
+
+
+
+Note:3.if class level address is not available then method level address is mandatory.
+@RestController
+public class WelcomeController {
+
+	@GetMapping("/welcome")
+	public String welcome() {
+		return "Welcome to Restfull services";
+	}
+
+}
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+29-10-2019
+Message Oriented Representation:
+----------------------------------------------
+Rest api supports for multiple data formats
+
+Ex: xml, json, yml, text, html etc....
+
+Communication Stateless :
+------------------------------------
+In Rest api communication, every client request will be considered as new request. Nothing will be stored at server.
+
+ HATEOAS (Hypermedia As The Engine Of  Application State):
+-----------------------------------------------------------------------------------
+
+
+Working with JSON
+-----------------
+JSON - Java Script Object Notation
+
+JSON is platform independent & language independent
+
+JSON is light weight when compared with XML
+
+JSON represents data in key-value format
+
+
+To work with JSON data in Java applications we can use below apis
+------------------------------------------------------------------
+1) Jackson
+2) Gson
+
+Jackson API
+-----------
+ObjectMapper mapper = new ObjectMapper();
+ 
+//converting java obj to json data
+String personJson = mapper.writeValueAsString(personObj);
+
+//converting json data to java obj
+Person p = mapper.readValue(personJson,Person.class);
+
+Gson API
+--------
+Gson gson = new Gson();
+
+//convert java obj to json
+String personJson = gson.toJson(personObj);
+
+//convert json to java object
+Person p = gson.fromJson(personJson,Person.class);
+
+
+RestController with Json Data
+-----------------------------
+@RestController ---> Class will become distributed component
+
+@GetMapping --> To bind method to HTTP GET request
+
+GET : If server wants to send data to client then use GET request method (client will send GET request to get the data)
+
+-> GET request will not contain body
+------------------------------------------------------------
+
+
+@PostMapping --> To bind method to HTTP Post request
+
+POST : If server wants to recieve the data to create new record then use POST request method (Client will send data in POST request body).
+
+-> POST request will contain body
+
+
+Consumes & Produces
+-------------------
+Consumes represents in which format rest api method can receive the data
+
+Produces represents in which format rest api method can provide the response
+
+Note: one method can support for multiple consume and produces formats.
+
+GET request with Produces syntax
+--------------------------------
+
+@GetMapping(
+	value="/getCustomer",
+	produces={
+		"application/json"
+	}
+)
+public Customer getCustomer(){
+	//logic
+	return customerObj;
+}
+
+Note: When client sending GET request to above method we should send
+Accept header.
+
+syntax : Accept=application/json
+
+Note: Accept header represents client expecting response format from server.
+
+POST Request method with JSON
+-----------------------------
+@PostMapping(
+	value="/addCustomer",
+	consumes= {
+		"application/json",
+		"application/xml"
+	}
+)
+public String addCustomer(Customer c){
+	//logic
+	return "Success";
+}
+
+When Client is sending POST request with data in request body, we should send one header called 'Content-Type'
+
+Content-Type header represents in which format client is sending data to server in request body.
+
+Syntax: Content-Type=application/json
+
+
+Rest API Testing Tools
+-----------------------
+1) SOAP UI
+
+2) POSTMAN
+3) Swagger UI
+
+
+Spring Boot Actuators
+------------------------------
+The main purpose of the spring boot actuators is  monitor our spring boot application and to provide production ready features.
+
+when we deploy our project to production environment then we need to monitor our application like
+
+How the application is behaving ?. what is the health of the project ?. how many classes are loaded and howmany objects  are created ?.
+
+what is the  cpu utilization time ?. how much memory is used in jvm ?. howmuch memoy  is free in jvm ?. what are the last 100 requests are recevied our application ?.
+
+which profile is loaded our application ?. What are the configuration properties are loaded our application ?.  All those details we need to monitor when our 
+application is running  on production. Those are called production ready features.
+
+what are the challenges are faced in your project.
+------------------------------------------------------------------------
+
+I was faced  out of memeory exceptions in my project. 
+
+when requests are comming from end user  to application continuously  then objects will  be created continuously. if objects are created continuously
+ heap space memory  reaches maximum capacity. then out of memory exception will come in this situation. whenever work is completed 
+with  that object we need to nullify that object then only Garbage collector is going removes unused  object. So memory consumption
+ is less in the heap space.
+
+while deploying our application into production environment .so many classes are loaded in metaspace. if meta space reaches maximum capacity 
+then out of  memory exceptions will come in production environment. 
+
+we need to solve this type exception for this we need to exclude unused dependencies from our project.
+
+ when meta space or heap space  is reaches maximum capacity then commonly raises out of memory exceptions .
+
+if out of memory exceptions are  raised in production. what programmer has to do?
+-----------------------------------------------------------------------------------------------------------------------
+programmer has to perform heap analysis and thread analysis.
+
+Have you ever done thread dump of your project ? and  Have you ever done heap dump of your project?
+-------------------------------------------------------------------------------------------------------------------------------------------------
+
+yes I have done.
+
+
+which tools are used to analize jvm memory?
+-------------------------------------------------------------------
+
+Jmap, Jhat, JConsole these commands are used to analize jvm memory.
+mat plug in eclipse
+
+
+how to increase heap space and how increase Metaspace?
+-------------------------------------------------------------------------------------
+
+we can set the initial and maximum size of  heapspace using the following commands
+
+-Xms256m (sets the initial or minimum size of the heapspace)
+-Xmx1024m (sets maixmum size of the heap space)
+
+
+we can set the initial and maximum size of metaspace using the following commands
+
+-XX:MetaspaceSize=100M (sets the initial or minimum size of the metaspace)
+-XX:MaxMetaspaceSize=1024M(sets the maimum size of the metaspace)
+
+
+
+In the Jvm Mainly two parts are available they are 
+1. Meta Space : classes are loaded in meta space
+2. Heap Space : object are created in heap space
+
+--------------------------------------------------------------------------------------------------------------------------------------
+
+if project is running my machine i can do classes analysis. i can do thread analysis  and i can do heap analysis  using Jconsole .
+
+if project is running in production environment can we perform thread dump and heap dump using Jconsole. No, We can't perform.
+
+
+How  we need to analyze project which is running  Production Environment?
+Thats why boot given actuators.
+
+
+Before actuators 
+----------------------
+using putty we can connect windows machine to linux machine . we can download thread dump and heap dump from linux to windows  using putty.
+
+we can use some commands to perform heap dump and thread dump.
+
+heap dump means download heap data.
+
+thread dump means download thread data.
+
+it is  a universal requirment for every application thats why actuator are came into market.
+
+
+1) Health check : our application running status is up or down
+
+2) Thread Dump: how many thread are created. how many threads are currently active.how many theads are inactive?. how many threads are blocked
+
+3) Heap Dump: howmany objects are created?. Howmany  objects are   using and howmany objects  are not using?.
+
+4) Config props
+
+5) Classes: checking howmany classes are loaded?
+
+6) Http Trace 
+
+7) Stop the application
+
+
+/actuator/shutdown ---> This is by default disabled
+
+This we need to enable 
+
+This endpoint is binded to HTTP Post request(no need to pass any http header)
+ 
+
+if you want to work with actuators we need to add the following dependency in pom.xml file
+
+<dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-actuator</artifactId>
+    </dependency>
+
+Except shutdown all endpoints are enabled.
+but by default  2 endpoint are exposed . They are health and info.exposed means we cans access those endpoints.
+
+if we want access endpoints  from spring 2.x projects  in the url "actuator" is mandatory.
+if we want access endpoints  from spring 1.x projects  in the url "actuator"  is  not required.
+
+if want to expose all endpoint except shutdown we need to write following code in yml file
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+if want to expose shudown endpoint we need to write following code in yml file
+
+management:
+  endpoint:
+    shutdown:
+        enabled: true
+
+if want to exclude  env, beans endpoints we need to write following code in yml file
+
+management:
+  endpoints:
+    web:
+       exposure:
+          exclude: env, beans
+
+
+Unit Testing in Spring boot application
+------------------------------------------------------
+
+The process of testing our piece of code is called UnitTesting.
+
+Test Engineer  will perform SIT(System Integration Testing)
+Developer will perform Unit Testing 
+
+for example  if  we write  10 lines of code  in one  method .doesn't mean that code is going  to  excute as expected or not.  we  make sure that code gives as expected result
+or not   for this we need to go for UnitTesting.
+
+UnitTesting can be done in two ways.
+
+1.Manual Unit Testing
+---------------------------------
+	--Manual Unit Testing canbe done using debugging.
+	
+	whenever you complete the code you want understand how the code is behave in the situation only we are using debugging.
+	if want to  know about execution flow then only we need to go for debugging.
+	if we want  to fix bugs in our application then only we need to go for debugging.
+	We will go for debugging mechanism .  we will test line by line  and we are going  understand how the code is executed.
+
+what is the problem of manual  testing?
+-------------------------------------------------
+	Every time we need to test our code whenever commit is there  in git repository. It is going waste our time.
+
+
+2. using Junit 
+---------------------
+if you want execute our code  is in postive scenario and negative scenario then we need to go for junit
+
+
+Always unit testing  will happen on dummy object only. unit testing doesn't happen real object.
+
+The process of creating substitute object for real object is called mocking.
+
+
+
+
+JUnit 
+JUnit annotations (@Test) --- @SpringBootTest
+Assertions  --- to verify results
+Mocking (EasyMock, PowerMock, Mockito, WireMock etc.... are mocking frame works)
+Mockito 
+
+Code Coverage report using Jacocco: 
+----------------------------------------------------------
+
+Howmany lines of  source code is covered as part of unit testing is called code coverage.
+
+
+Once unit Testing is executed we will verify code coverage  we help us to which line of code is executed 
+which lines of code is not executed  as part of unit tesing . 
+
+to see the code coverage we use jacoco plugin.
+
+As per industry standard we should maintain minimum 85%  of code coverage.
+
+To see code coverage  report we need add jacoco maven plugin in project pom.xml file inside build section
+
+
+
+Note : If we create SpringBoot project with 2.x Boot version, then Junit 5.x and Mockito will come to build path.
+
+@SpringBootTest :- This is used to represent class as Unit testing class.
+
+@Test : To represent method as unit testing method.
+
+Assertions :- Predefined class in Junit. Provided many static methods to verify test results.
+
+
+@InjectMocks : This annotation used to represent target class object with dependents as mock objs.
+
+@Mock : It is used to create Mock object and inject into @InjectMocks object.(to make dependent object as  mock object)
+
+Mockito.when(customerRepo.save(entity))).thenReturn(entity);
+
+Mockito.when(customerRepo.save(Mockito.any(CustomerEntity.class))).thenReturn(entity);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
