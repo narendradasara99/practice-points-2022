@@ -1,6 +1,0 @@
-4-24- Oject Class
-	26- String Handling
-	27- Wrapper Class
-	28-Exception Handling
-	29-MultiThreading
-	30-MultiThreading
